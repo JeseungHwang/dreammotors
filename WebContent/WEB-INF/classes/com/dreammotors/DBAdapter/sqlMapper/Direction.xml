@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Direction">
+	<resultMap id="DirectionResult" type="DirectionVO">	
+		<result property="clocAddr" column="cloc_Addr"/>
+		<result property="clocTell" column="cloc_tell"/>
+		<result property="clocMapUrl" column="cloc_map_url"/>
+		
+	</resultMap>
+	
+	<select id="SelectDirection" resultMap="DirectionResult">
+		SELECT
+			cloc_Addr, cloc_tell, cloc_map_url
+		FROM
+			companylocationinfo
+		WHERE
+			cloc_index = 1
+	</select>
+	
+	<update id="UpdateDirection" parameterType="DirectionVO">
+		UPDATE companylocationinfo 
+		<set>
+			<if test="clocAddr != null">cloc_Addr = #{clocAddr}</if>
+			<if test="clocTell != null">,cloc_tell = #{clocTell}</if>
+		</set>
+		WHERE
+			cloc_index = 1
+	</update>
+</mapper>

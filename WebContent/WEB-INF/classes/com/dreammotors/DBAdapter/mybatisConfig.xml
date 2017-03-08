@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!-- db 정보 파일을 로드한다. -->
+    <properties resource="com/dreammotors/DBAdapter/db.properties" />
+
+	<!-- VO객체 명명 -->
+	<typeAliases>
+		<typeAlias alias="MemberVO" type="com.dreammotors.vo.MemberVO"/>
+		<typeAlias alias="FamilyVO" type="com.dreammotors.vo.FamilyVO"/>
+		<typeAlias alias="BoardVO" type="com.dreammotors.vo.BoardVO"/>
+		<typeAlias alias="BoardCommentVO" type="com.dreammotors.vo.BoardCommentVO"/>
+		<typeAlias alias="DirectionVO" type="com.dreammotors.vo.DirectionVO"/>
+		<typeAlias alias="SearchVO" type="com.dreammotors.vo.SearchVO"/>
+	</typeAliases>
+	
+    <!-- db 연결 -->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC" />
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}" />
+                <property name="url" value="${url}" />
+                <property name="username" value="${username}" />
+                <property name="password" value="${password}" />
+
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- sql 맵퍼 -->
+    <mappers>
+        <mapper resource="com/dreammotors/DBAdapter/sqlMapper/Member.xml"/>
+        <mapper resource="com/dreammotors/DBAdapter/sqlMapper/Family.xml"/>
+        <mapper resource="com/dreammotors/DBAdapter/sqlMapper/CommunityBoard.xml"/>
+        <mapper resource="com/dreammotors/DBAdapter/sqlMapper/ConsultBoard.xml"/>
+        <mapper resource="com/dreammotors/DBAdapter/sqlMapper/BoardComment.xml"/>
+        <mapper resource="com/dreammotors/DBAdapter/sqlMapper/Direction.xml"/>
+    </mappers>
+ 
+</configuration>

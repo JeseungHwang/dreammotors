@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Family">
+	<resultMap id="FamilyResult" type="FamilyVO">
+		<result property="cmemIndex" column="cmem_index"/>
+		<result property="cmemName" column="cmem_name"/>
+		<result property="cmemImgUrl" column="cmem_img_url"/>
+		<result property="positionId" column="position_id"/>
+		<result property="positionName" column="position_name"/>
+	</resultMap>
+	
+	<sql id="FamilyBasicSelect">
+		SELECT 
+			c.cmem_name, c.cmem_img_url, c.position_id, p.position_name
+		FROM
+			companymemberinfo c
+		INNER JOIN positioninfo p
+			on c.position_id = p.position_id
+	</sql>
+	
+	<select id="SelectAllFamily" resultMap="FamilyResult">
+		SELECT 
+			c.cmem_index, c.cmem_name, c.cmem_img_url, p.position_name
+		FROM
+			companymemberinfo c
+		INNER JOIN positioninfo p
+			on c.position_id = p.position_id
+		ORDER BY
+			c.position_id DESC
+	</select>
+	
+	<insert id="InsertFamily" parameterType="FamilyVO">
+		INSERT INTO companymemberinfo
+			( cmem_name, cmem_img_url, position_id)			
+		VALUES
+			( #{cmemName}, #{cmemImgUrl}, #{positionId} )
+	</insert>
+	
+	<delete id="DeleteFamily" parameterType="int">
+		DELETE FROM companymemberinfo
+		WHERE
+			cmem_index = #{cmemIndex}
+	</delete>
+</mapper>

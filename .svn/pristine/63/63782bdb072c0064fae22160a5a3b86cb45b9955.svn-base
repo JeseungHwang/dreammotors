@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ConsultBoard">
+	<resultMap id="ConsultBoardResult" type="BoardVO">
+		<result property="boardIndex" column="board_index"/>
+		<result property="boardTitle" column="board_title"/>
+		<result property="boardIsNotice" column="board_isNotice"/>
+		<result property="boardIsPrivate" column="board_isPrivate"/>
+		<result property="boardContext" column="board_context"/>
+		<result property="boardRegName" column="board_reg_name"/>
+		<result property="boardRegPW" column="board_reg_pw"/>
+		<result property="boardTell" column="board_tell"/>
+		<result property="boardViewCnt" column="board_view_cnt"/>
+		<result property="boardImgUrl" column="board_img_url"/>
+		<result property="boardRegDatetime" column="board_reg_datetime"/>
+		<result property="boardModifyDatetime" column="board_modify_datetime"/>
+		<result property="memId" column="mem_id"/>
+		<result property="memName" column="mem_name"/>
+		<result property="bTypeId" column="bType_id"/>
+		<result property="bTypeName" column="bType_name"/>
+	</resultMap>
+	
+	<sql id="BasicSelectConsultBoardFull">
+		SELECT
+			brd.board_index, brd.board_title, brd.board_isNotice, brd.board_isPrivate, brd.board_context, brd.board_reg_name, 
+			brd.board_reg_pw, brd.board_tell, brd.board_view_cnt, brd.board_img_url, brd.board_reg_datetime, brd.board_modify_datetime, 
+			m.mem_id, m.mem_name, bty.bType_id, bty.bType_name
+		FROM
+			board brd 
+		INNER JOIN member m
+			ON brd.mem_id = m.mem_id
+		INNER JOIN boardtype bty
+			ON brd.bType_id = bty.bType_id
+	</sql>
+	
+	<sql id="BasicSelectConsultBoardList">
+		SELECT
+			board_index,board_title, board_isPrivate, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+	</sql>
+	
+	<select id="SelectAllPurchaseBoard" resultMap="ConsultBoardResult" parameterType="int">
+		<include refid="BasicSelectConsultBoardList"/>
+		WHERE
+			bType_id = 'p'
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage} , 15
+	</select>
+	
+	<select id="SelectTotaleBoardCount" resultType="int" parameterType="String">
+		SELECT count(*) FROM board WHERE
+			bType_id = #{btype}
+	</select>
+	
+	<select id="SelectTotaleNoticeBoardCount" resultType="int" parameterType="String">
+		SELECT count(*) FROM board WHERE
+			bType_id = 'n' AND board_isNotice = '0'
+	</select>
+	
+	<select id="SelectMainPurchaseBoard" resultMap="ConsultBoardResult">
+		SELECT
+			board_index,board_title, board_isPrivate, board_reg_name, board_reg_datetime
+		FROM
+			board
+		WHERE
+			bType_id = 'p' 
+		ORDER BY
+			board_index DESC
+		LIMIT 8
+	</select>
+
+	<select id="TermSelectConsultBoard" parameterType="SearchVO" resultMap="ConsultBoardResult">
+		<include refid="BasicSelectConsultBoardList"/>
+		<where>
+			bType_id = #{btype}
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage}, 15
+	</select>
+	
+	<select id="TermSelectConsultBoard2" resultType="int" parameterType="SearchVO">
+		SELECT count(*) FROM board
+		<where>
+			bType_id = #{btype}
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="SelectAllSalesBoard" resultMap="ConsultBoardResult" parameterType="int">
+		<include refid="BasicSelectConsultBoardList"/>
+		WHERE
+			bType_id = 's'
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage} , 15
+	</select>
+	
+	<select id="SelectMainSalesBoard" resultMap="ConsultBoardResult">
+		SELECT
+			board_index, board_title, board_isPrivate, board_reg_name, board_reg_datetime
+		FROM
+			board
+		WHERE
+			bType_id = 's' 
+		ORDER BY
+			board_index DESC
+		LIMIT 8
+	</select>
+	
+	<select id="SelectConsultBoard" parameterType="BoardVO" resultMap="ConsultBoardResult">
+		SELECT
+			brd.board_index, brd.board_title, brd.board_isPrivate, brd.board_context, brd.board_reg_name, brd.board_view_cnt, brd.board_reg_datetime,
+			mem_id, bty.bType_id, bty.bType_name
+		FROM
+			board brd 
+		INNER JOIN boardtype bty
+			ON brd.bType_id = bty.bType_id
+		WHERE
+			brd.board_index = #{boardIndex}
+	</select>
+	
+	<select id="SelectConsultBoard2" parameterType="BoardVO" resultMap="ConsultBoardResult">
+		SELECT
+			brd.board_index, brd.board_title, brd.board_tell, brd.board_isPrivate, brd.board_context, brd.board_reg_name, brd.board_view_cnt, brd.board_reg_datetime,
+			mem_id, bty.bType_id, bty.bType_name
+		FROM
+			board brd 
+		INNER JOIN boardtype bty
+			ON brd.bType_id = bty.bType_id
+		WHERE
+			brd.board_index = #{boardIndex}
+	</select>
+	
+	<select id="ModifyConsultBoard" parameterType="BoardVO" resultMap="ConsultBoardResult">
+		SELECT
+			board_index, board_title, board_isPrivate, board_context, board_reg_name, board_tell, board_view_cnt, board_reg_datetime, bType_id
+		FROM
+			board 
+		WHERE
+			board_index = #{boardIndex}
+			<if test="boardRegPW != null">AND board_reg_pw = #{boardRegPW}</if>
+	</select>
+	
+	<insert id="InsertConsultBoard" parameterType="BoardVO">
+		INSERT INTO board
+			( mem_id, bType_id, board_title, board_isPrivate, board_context, board_reg_name, board_reg_pw, board_tell, board_img_url, board_reg_datetime, board_modify_datetime)
+		VALUES
+			( #{memId},#{bTypeId}, #{boardTitle},  #{boardIsPrivate},  #{boardContext}, #{boardRegName}, #{boardRegPW}, #{boardTell}, #{boardImgUrl}, now(), now())
+	</insert>
+	
+	<update id="UpdateConsultBoard" parameterType="BoardVO">
+		UPDATE board SET
+			bType_id = #{bTypeId}, board_title = #{boardTitle}, board_isPrivate = #{boardIsPrivate}, board_context = #{boardContext}, board_reg_name = #{boardRegName}, 
+			board_tell = #{boardTell}, board_img_url = #{boardImgUrl}, board_modify_datetime = now()
+		WHERE 
+			board_index = #{boardIndex}
+	</update>
+	
+	<delete id="DeleteConsultBoard"  parameterType="BoardVO">
+		DELETE FROM board
+		WHERE
+			board_index = #{boardIndex}
+			<if test="boardRegPW != null">AND board_reg_pw = #{boardRegPW}</if>
+	</delete>
+	
+	<select id="IsPrivate" parameterType="BoardVO" resultMap="ConsultBoardResult">
+		SELECT
+			mem_id, board_isPrivate
+		FROM
+			board 
+		WHERE
+			board_index = #{boardIndex}
+	</select>
+	
+	<select id="CompareBoardPW" parameterType="BoardVO" resultMap="ConsultBoardResult">
+		SELECT
+			brd.board_index, brd.board_title, brd.board_isPrivate, brd.board_context, brd.board_reg_name, brd.board_view_cnt, brd.board_reg_datetime,
+			mem_id, bty.bType_id, bty.bType_name
+		FROM
+			board brd 
+		INNER JOIN boardtype bty
+			ON brd.bType_id = bty.bType_id
+		WHERE
+			brd.board_index = #{boardIndex} AND brd.board_reg_pw = #{boardRegPW}
+	</select>
+	
+	<update id="doUpdateViewCnt" parameterType="BoardVO">
+		UPDATE board SET
+			board_view_cnt = #{boardViewCnt}
+		WHERE 
+			board_index = #{boardIndex}
+	</update>
+</mapper>

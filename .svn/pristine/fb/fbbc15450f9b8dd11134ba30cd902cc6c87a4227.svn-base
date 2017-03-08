@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Member">
+	<resultMap id="MemberResult" type="MemberVO">	
+		<result property="memId" column="mem_id"/>
+		<result property="memPw" column="mem_pw"/>
+		<result property="memPermission" column="mem_permission"/>
+		<result property="memName" column="mem_name"/>
+		<result property="memNick" column="mem_nick"/>
+		<result property="memEmail" column="mem_email"/>
+		<result property="memTell" column="mem_tell"/>
+		<result property="memAddr" column="mem_addr"/>
+		<result property="memRegDateTime" column="mem_reg_datetime"/>
+		<result property="positionName" column="position_name"/>
+	</resultMap>
+	
+	<resultMap id="PermissionResult" type="MemberVO">	
+		<result property="memPermission" column="position_id"/>
+		<result property="positionName" column="position_name"/>
+	</resultMap>
+	
+	<sql id="MemberBasicSelect">
+		SELECT
+			mem_id, mem_pw, mem_permission, mem_name, mem_nick, mem_email, mem_tell, mem_addr, mem_reg_datetime
+		FROM
+			member
+	</sql>
+	
+	<select id="SelectMember" parameterType="MemberVO" resultMap="MemberResult">
+		SELECT
+			mem_id, mem_name
+		FROM
+			member
+		WHERE
+			mem_id = #{memId} AND mem_pw = HEX(AES_ENCRYPT(#{memPw},'helinian'))
+	</select>
+	
+	<select id="SelectMemberInfo" parameterType="MemberVO" resultMap="MemberResult">
+		<include refid="MemberBasicSelect"/>
+		WHERE
+			mem_id = #{memId}
+	</select>
+	
+	<select id="SelectMemberBoardInfo" parameterType="String" resultMap="MemberResult">
+		SELECT
+			mem_name, mem_tell
+		FROM
+			member
+		WHERE
+			mem_id = #{memId}
+	</select>
+	
+	<select id="SelectUserModifyInfo" parameterType="MemberVO" resultMap="MemberResult">
+		SELECT
+			mem_id, mem_name, mem_nick, mem_email, mem_tell, mem_addr, mem_reg_datetime
+		FROM
+			member
+		WHERE
+			mem_id = #{memId}
+	</select>
+	
+	<select id="SelectAdminModifyInfo" parameterType="MemberVO" resultMap="MemberResult">
+		SELECT
+			m.mem_id, m.mem_permission, p.position_name, m.mem_name, m.mem_nick, m.mem_email, m.mem_tell, m.mem_addr, m.mem_reg_datetime
+		FROM
+			member m
+		
+		INNER JOIN positioninfo p
+        ON m.mem_permission = p.position_id
+        
+        WHERE
+			mem_id = #{memId}
+	</select>
+	
+	<select id="isExistID" parameterType="String" resultType="String">
+		SELECT
+			mem_id
+		FROM
+			member
+		WHERE
+			mem_id = #{memId}
+	</select>
+	
+	<insert id="InsertMember" parameterType="MemberVO">
+		INSERT INTO member
+			( mem_id, mem_pw, mem_permission, mem_name, mem_nick, mem_email, mem_tell, mem_addr, mem_reg_datetime )			
+		VALUES
+			( #{memId}, HEX(AES_ENCRYPT(#{memPw},'helinian')), 1, #{memName}, #{memNick}, #{memEmail}, #{memTell}, #{memAddr}, now() )
+	</insert>
+	
+	<select id="IsAdmin" parameterType="String" resultType="String">
+		SELECT mem_id FROM member
+		WHERE
+			mem_id = #{memId} AND mem_permission > 1
+	</select>
+	
+	<sql id="MemberManagement">
+		SELECT
+			m.mem_id, m.mem_permission, p.position_name, m.mem_name, m.mem_nick, m.mem_email, m.mem_tell, m.mem_reg_datetime
+		FROM
+			member m
+		INNER JOIN positioninfo p ON
+			m.mem_permission = p.position_id
+	</sql>
+	
+	<select id="SelectAllMemberList" parameterType="SearchVO" resultMap="MemberResult">
+		<include refid="MemberManagement"/>
+		ORDER BY m.mem_reg_datetime DESC
+		LIMIT #{pcnt}, 20
+	</select>
+	
+	<select id="SelectTotalMemberCount" resultType="int">
+		SELECT count(*) FROM member 
+	</select>
+	
+	<select id="SelectMemberCount" parameterType="SearchVO" resultType="int">
+		SELECT count(*) FROM member m
+		INNER JOIN positioninfo p ON
+			m.mem_permission = p.position_id
+		<where>
+			<if test='stype.equals("p")'>
+				p.position_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("i")'>
+				m.mem_id like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("nm")'>
+				m.mem_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("nk")'>
+				m.mem_nick like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("e")'>
+				m.mem_tell like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("t")'>
+				m.mem_tell like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="TermSelectMember" parameterType="SearchVO" resultMap="MemberResult">
+		<include refid="MemberManagement"/>
+		<where>
+			<if test='stype.equals("p")'>
+				p.position_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("i")'>
+				m.mem_id like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("nm")'>
+				m.mem_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("nk")'>
+				m.mem_nick like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("e")'>
+				m.mem_tell like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("t")'>
+				m.mem_tell like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+		ORDER BY m.mem_reg_datetime DESC
+		LIMIT #{spage}, 15
+	</select>
+	
+	<delete id="DeleteMember"  parameterType="String">
+		DELETE FROM member
+		WHERE
+			mem_id = #{memId}
+	</delete>
+	
+	<select id="SelectPermissionList" resultMap="PermissionResult">
+		SELECT position_id, position_name FROM positioninfo
+	</select>
+	
+	<update id="UpdateMemberPermission" parameterType="HashMap">
+		UPDATE member SET
+			mem_permission = #{ptype}
+		WHERE 
+			mem_id = #{memId}
+	</update>
+	
+	<update id="UpdateMemberInfomation" parameterType="MemberVO">
+		UPDATE member
+			<set>
+				<if test="memName != null">mem_name = #{memName},</if>
+				<if test="memPw != null">mem_pw = HEX(AES_ENCRYPT(#{memPw},'helinian')),</if>
+				<if test="memNick != null">mem_nick = #{memNick},</if>
+				<if test="memEmail != null">mem_email = #{memEmail},</if>
+				<if test="memTell != null">mem_tell = #{memTell},</if>
+				<if test="memAddr != null">mem_addr = #{memAddr}</if>
+			</set>
+		WHERE 
+			mem_id = #{memId}
+	</update>
+	<select id="SelectFindID" parameterType="MemberVO" resultType="String">
+		SELECT
+			mem_id
+		FROM
+			member
+		WHERE
+			mem_name = #{memName} AND mem_email = #{memEmail}
+	</select>
+	
+	<select id="SelectFindPW" parameterType="MemberVO" resultType="String">
+		SELECT
+			mem_id
+		FROM
+			member
+		WHERE
+			mem_id = #{memId} AND mem_name = #{memName} AND mem_email = #{memEmail}
+	</select>
+	<update id="UpdateUserPW" parameterType="MemberVO">
+		UPDATE member SET
+			mem_pw = HEX(AES_ENCRYPT(#{memPw},'helinian'))
+		WHERE 
+			mem_id = #{memId}
+	</update>
+</mapper>

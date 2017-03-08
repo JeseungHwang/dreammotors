@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CommunityBoard">
+	<resultMap id="CommunityBoardResult" type="BoardVO">
+		<result property="boardIndex" column="board_index"/>
+		<result property="boardTitle" column="board_title"/>
+		<result property="boardIsNotice" column="board_isNotice"/>
+		<result property="boardIsPrivate" column="board_isPrivate"/>
+		<result property="boardContext" column="board_context"/>
+		<result property="boardRegName" column="board_reg_name"/>
+		<result property="boardRegPW" column="board_reg_pw"/>
+		<result property="boardTell" column="board_tell"/>
+		<result property="boardViewCnt" column="board_view_cnt"/>
+		<result property="boardImgUrl" column="board_img_url"/>
+		<result property="boardRegDatetime" column="board_reg_datetime"/>
+		<result property="boardModifyDatetime" column="board_modify_datetime"/>
+		<result property="memId" column="mem_id"/>
+		<result property="memName" column="mem_name"/>
+		<result property="bTypeId" column="bType_id"/>
+		<result property="bTypeName" column="bType_name"/>
+	</resultMap>
+
+	<sql id="BasicSelectCommunityBoardList">
+		SELECT
+			board_index,board_title, board_isPrivate, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+	</sql>
+	
+	<select id="SelectAllNoticeBoard" resultMap="CommunityBoardResult" parameterType="int">
+		<include refid="BasicSelectCommunityBoardList"/>
+		WHERE
+			bType_id = 'n' AND board_isNotice = '0'
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage} , 15
+	</select>
+	
+	<select id="SelectIsNoticeBoard" resultMap="CommunityBoardResult">
+		<include refid="BasicSelectCommunityBoardList"/>
+		WHERE
+			bType_id = 'n' AND board_isNotice = '1'
+		ORDER BY
+			board_index DESC
+	</select>
+	
+	<select id="SelectNoticeBoard" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_isNotice, board_title, board_context, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		WHERE
+			board_index = #{boardIndex}
+	</select>
+	
+	<select id="TermSelectNoticeBoard" parameterType="SearchVO" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_isNotice, board_title, board_context, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		<where>
+			bType_id = #{btype}
+			<if test='btype.equals("n")'>
+				AND board_isNotice = 0
+			</if>
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage}, 15
+	</select>
+	
+	<select id="TermSelectNoticeBoard2" resultType="int" parameterType="SearchVO">
+		SELECT count(*) FROM board
+		<where>
+			bType_id = #{btype}
+			<if test='btype.equals("n")'>
+				AND board_isNotice = 0 
+			</if>
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="InsertNoticeBoard" parameterType="BoardVO">
+		INSERT INTO board
+			( mem_id, bType_id, board_title, board_isNotice, board_context, board_reg_name, board_reg_pw, board_tell, board_img_url, board_reg_datetime, board_modify_datetime)
+		VALUES
+			( #{memId},'n', #{boardTitle},  #{boardIsNotice},  #{boardContext}, #{boardRegName}, #{boardRegPW}, #{boardTell}, #{boardImgUrl}, now(), now())
+	</insert>
+	
+	<update id="UpdateNoticeBoard" parameterType="BoardVO">
+		UPDATE board SET
+			board_title = #{boardTitle}, board_isNotice =  #{boardIsNotice}, board_context = #{boardContext}, board_modify_datetime = now()
+		WHERE 
+			board_index = #{boardIndex}
+	</update>
+		
+	<select id="SelectAllReviewBoard" resultMap="CommunityBoardResult" parameterType="int">
+		<include refid="BasicSelectCommunityBoardList"/>
+		WHERE
+			bType_id = 'r'
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage}, 15
+	</select>
+	
+	<select id="SelectMainReviewBoard" resultMap="CommunityBoardResult">
+		<include refid="BasicSelectCommunityBoardList"/>
+		WHERE
+			bType_id = 'r'
+		ORDER BY
+			board_index DESC
+		LIMIT 8
+	</select>
+	
+	<select id="SelectMainNoticeBoard" resultMap="CommunityBoardResult">
+		<include refid="BasicSelectCommunityBoardList"/>
+		WHERE
+			bType_id = 'n'
+		ORDER BY
+			board_index DESC
+		LIMIT 8
+	</select>
+	
+	<select id="SelectMainCustomerBoard" resultMap="CommunityBoardResult">
+		<include refid="BasicSelectCommunityBoardList"/>
+		WHERE
+			bType_id = 'c'
+		ORDER BY
+			board_index DESC
+		LIMIT 8
+	</select>
+	
+	<select id="SelectReviewBoard" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_title, board_context, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		WHERE
+			board_index = #{boardIndex}
+	</select>
+	
+	<select id="SelectReviewBoard2" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_title, board_tell, board_context, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		WHERE
+			board_index = #{boardIndex}
+	</select>
+	
+	<select id="TermSelectReviewBoard" parameterType="SearchVO" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_title, board_context, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		<where>
+			bType_id = #{btype}
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage}, 15
+	</select>
+	
+	<select id="TermSelectReviewBoard2" resultType="int" parameterType="SearchVO">
+		SELECT count(*) FROM board
+		<where>
+			bType_id = #{btype}
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="InsertReviewBoard" parameterType="BoardVO">
+		INSERT INTO board
+			( mem_id, bType_id, board_title, board_isNotice, board_context, board_reg_name, board_reg_pw, board_tell, board_img_url, board_reg_datetime, board_modify_datetime)
+		VALUES
+			( #{memId},'r', #{boardTitle},  #{boardIsNotice},  #{boardContext}, #{boardRegName}, #{boardRegPW}, #{boardTell}, #{boardImgUrl}, now(), now())
+	</insert>
+	
+	<update id="UpdateReviewBoard" parameterType="BoardVO">
+		UPDATE board SET
+			board_title = #{boardTitle}, board_context = #{boardContext}, board_modify_datetime = now()
+		WHERE 
+			board_index = #{boardIndex}
+	</update>
+		
+	<select id="SelectAllCustomerBoard" resultMap="CommunityBoardResult" parameterType="int">
+		<include refid="BasicSelectCommunityBoardList"/>
+		WHERE
+			bType_id = 'c'
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage}, 15
+	</select>
+	
+	<select id="SelectCustomerBoard" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_title, board_context, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		WHERE
+			board_index = #{boardIndex}
+	</select>
+	
+	<select id="TermSelectCustomerBoard" parameterType="SearchVO" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_title, board_context, board_reg_name, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		<where>
+			bType_id = #{btype}
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+		ORDER BY
+			board_index DESC
+		LIMIT #{spage}, 15
+	</select>
+	
+	<select id="TermSelectCustomerBoard2" resultType="int" parameterType="SearchVO">
+		SELECT count(*) FROM board
+		<where>
+			bType_id = #{btype}
+			<if test='stype.equals("t")'>
+				AND board_title like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("w")'>
+				AND board_reg_name like CONCAT('%', #{cntnt}, '%')
+			</if>
+			<if test='stype.equals("c")'>
+				AND board_context like CONCAT('%', #{cntnt}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="InsertCustomerBoard" parameterType="BoardVO">
+		INSERT INTO board
+			( mem_id, bType_id, board_title, board_isNotice, board_context, board_reg_name, board_reg_pw, board_tell, board_img_url, board_reg_datetime, board_modify_datetime)
+		VALUES
+			( #{memId},'c', #{boardTitle},  #{boardIsNotice},  #{boardContext}, #{boardRegName}, #{boardRegPW}, #{boardTell}, #{boardImgUrl}, now(), now())
+	</insert>
+	
+	<select id="ModifyCustomerBoard" parameterType="BoardVO" resultMap="CommunityBoardResult">
+		SELECT
+			board_index, board_isPrivate, board_title, board_context, board_reg_name, board_tell, board_view_cnt, board_reg_datetime
+		FROM
+			board
+		WHERE
+			board_index = #{boardIndex}
+			<if test="boardRegPW != null">AND board_reg_pw = #{boardRegPW}</if>
+	</select>
+	
+	<update id="UpdateCustomerBoard" parameterType="BoardVO">
+		UPDATE board SET
+			board_title = #{boardTitle}, board_context = #{boardContext}, board_reg_name = #{boardRegName}, 
+			board_tell = #{boardTell}, board_modify_datetime = now()
+		WHERE 
+			board_index = #{boardIndex}
+	</update>
+	
+	<select id="isWriter" parameterType="BoardVO" resultType="String">
+		SELECT mem_id FROM board
+		WHERE
+			board_index = #{boardIndex} AND mem_id = #{memId}
+	</select>
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BoardComment">
+	<resultMap id="BoardCommentResult" type="BoardCommentVO">
+		<result property="boardIndex" column="board_index"/>
+		<result property="bcmtOrder" column="bcmt_order"/>
+		<result property="bcmtRegName" column="bcmt_reg_name"/>
+		<result property="bcmtContext" column="bcmt_context"/>
+		<result property="bcmtRegDatetime" column="bcmt_reg_datetime"/>
+		<result property="memId" column="mem_id"/>
+	</resultMap>
+	
+	<select id="SelectAllBoardComment" parameterType="BoardCommentVO" resultMap="BoardCommentResult">
+		SELECT
+			bcnt.board_index, bcnt.bcmt_order, bcnt.bcmt_reg_name, bcnt.bcmt_context, bcnt.bcmt_reg_datetime, m.mem_id
+		FROM
+			boardcomment bcnt
+		LEFT OUTER JOIN member m
+			ON bcnt.mem_id = m.mem_id
+		WHERE
+			bcnt.board_index = #{boardIndex}
+	</select>
+	
+	<select id="SelectBoardOrderCnt" parameterType="int" resultType="int">
+		SELECT max(bcmt_order) FROM boardcomment WHERE board_index = #{boardIndex} ORDER BY bcmt_order
+	</select>
+	
+	<insert id="InsertBoardComment_Login" parameterType="BoardCommentVO">
+		INSERT INTO boardcomment
+			(board_index, bcmt_order, bcmt_reg_name, bcmt_context, bcmt_reg_datetime, mem_id)
+		VALUES
+			(#{boardIndex}, #{bcmtOrder}, #{bcmtRegName}, #{bcmtContext}, now(), #{memId})
+	</insert>
+	
+	<insert id="InsertBoardComment" parameterType="BoardCommentVO">
+		INSERT INTO boardcomment
+			(board_index, bcmt_order, bcmt_reg_name, bcmt_context, bcmt_reg_datetime)
+		VALUES
+			(#{boardIndex}, #{bcmtOrder}, #{bcmtRegName}, #{bcmtContext}, now())
+	</insert>
+	
+	<delete id="DeleteBoardComment"  parameterType="BoardCommentVO">
+		DELETE FROM boardcomment
+		WHERE
+			board_index = #{boardIndex} AND bcmt_order = #{bcmtOrder}
+	</delete>
+	
+	<select id="IsCommentWriter" parameterType="BoardCommentVO" resultType="String">
+		SELECT mem_id FROM boardcomment
+		WHERE
+			mem_id = #{memId} AND board_index = #{boardIndex} AND bcmt_order = #{bcmtOrder}
+	</select>
+</mapper>
